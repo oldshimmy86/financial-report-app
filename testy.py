@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 from requests.auth import HTTPBasicAuth
-from datetime import datetime
+from datetime import datetime, date
 import openpyxl
 from openpyxl import Workbook
 from openpyxl.styles import Font
@@ -22,8 +22,12 @@ password = st.secrets["password"]
 base_url = "https://api.moysklad.ru/api/remap/1.2/entity"
 
 # Выбор периода отчёта
-start_date = st.date_input("Дата начала", value=datetime.strptime("2022-01-01", '%Y-%m-%d'))
-end_date = st.date_input("Дата окончания", value=datetime.today())
+start_date_input = st.date_input("Дата начала", value=date(2022, 1, 1))
+end_date_input = st.date_input("Дата окончания", value=date.today())
+
+# Преобразование дат в формат datetime
+start_date = datetime.combine(start_date_input, datetime.min.time())
+end_date = datetime.combine(end_date_input, datetime.max.time())
 
 # Функции
 def fetch_orders(order_type):
@@ -49,7 +53,11 @@ def fetch_orders(order_type):
 def filter_orders_by_date(orders, start_date, end_date):
     filtered_orders = []
     for order in orders:
-        order_date = datetime.strptime(order['moment'], '%Y-%m-%d %H:%M:%S.%f')
+        try:
+            order_date = datetime.strptime(order['moment'], '%Y-%m-%d %H:%M:%S.%f')
+        except ValueError:
+            order_date = datetime.strptime(order['moment'], '%Y-%m-%d %H:%M:%S')
+        
         if start_date <= order_date <= end_date:
             filtered_orders.append(order)
     return filtered_orders
@@ -126,8 +134,6 @@ def generate_excel():
     details_sheet.append(["Дата", "Номер ордера", "Cash, PLN", "PLN total", "Cash, USD", "Cash, EUR", "Card", "Currency", "Comment"])
     
     details_sheet.column_dimensions['A'].width = 15
-    details_sheet.column_dimensions['B'].width = 15
-
     
     pln_total = 0
     
