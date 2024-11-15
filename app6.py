@@ -111,12 +111,15 @@ def create_excel_report(currency_totals, details):
     ws2 = wb.create_sheet("Детали ордеров")
 
     # Заполнение первой вкладки
-    ws1.append(["Валюта", "Наличные", "Карта", "Количество документов", "Тестовые ордера"])
-    for currency, data in currency_totals.items():
-        ws1.append([currency, data["cash"], data["card"], data["count"], data["test_count"]])
-        if data["cash"] < 0 or data["card"] < 0:
-            for cell in ws1[-1]:
-                cell.fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
+ws1.append(["Валюта", "Наличные", "Карта", "Количество документов", "Тестовые ордера"])
+for currency, data in currency_totals.items():
+    ws1.append([currency, data["cash"], data["card"], data["count"], data["test_count"]])
+    
+    # Проверка отрицательных значений и установка стиля
+    if data["cash"] < 0 or data["card"] < 0:
+        for cell in ws1.iter_rows(min_row=ws1.max_row, max_row=ws1.max_row):
+            for c in cell:
+                c.fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
 
     # Заполнение второй вкладки
     ws2.append(["Дата", "Номер ордера", "Сумма", "Валюта", "Тип платежа", "Тип документа", "Test Order", "Комментарий"])
