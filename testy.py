@@ -69,7 +69,7 @@ def calculate_totals(orders, is_income):
     order_details = []
     
     for order in orders:
-        sum_value = order['sum'] / 100
+        sum_value = round(order['sum'] / 100, 2)
         sum_value = sum_value if is_income else -sum_value
         currency_href = order['rate']['currency']['meta']['href']
         
@@ -82,14 +82,14 @@ def calculate_totals(orders, is_income):
             currency = 'EUR'
         
         if currency:
-            totals[currency]['total'] += sum_value
+            totals[currency]['total'] = round(totals[currency]['total'] + sum_value, 2)
             totals[currency]['count'] += 1
 
             payment_type = next((attr['value']['name'] for attr in order.get('attributes', []) if attr['name'] == "PaymentType"), "Unknown")
             if payment_type == "Cash-in-showroom":
-                totals[currency]['cash'] += sum_value
+                totals[currency]['cash'] = round(totals[currency]['cash'] + sum_value, 2)
             elif payment_type == "Card-in-showroom":
-                totals[currency]['card'] += sum_value
+                totals[currency]['card'] = round(totals[currency]['card'] + sum_value, 2)
 
             comment = order.get("description", "")
 
@@ -124,9 +124,8 @@ def generate_excel():
     summary_sheet.append(["Валюта", "Наличные", "Карта", "Количество документов"])
     
     for currency, data in income_totals.items():
-        net_total = data['total'] + expense_totals[currency]['total']
-        net_cash = data['cash'] + expense_totals[currency]['cash']
-        net_card = data['card'] + expense_totals[currency]['card']
+        net_cash = round(data['cash'] + expense_totals[currency]['cash'], 2)
+        net_card = round(data['card'] + expense_totals[currency]['card'], 2)
         net_count = data['count'] + expense_totals[currency]['count']
         summary_sheet.append([currency, net_cash, net_card, net_count])
     
@@ -138,17 +137,17 @@ def generate_excel():
     pln_total = 0
     
     for detail in all_details:
-        cash_pln = detail['cash_pln'] if detail['cash_pln'] else 0
-        pln_total += cash_pln
+        cash_pln = round(detail['cash_pln'], 2) if detail['cash_pln'] else 0
+        pln_total = round(pln_total + cash_pln, 2)
 
         row = [
             detail['date'], 
             detail['name'], 
             cash_pln if cash_pln != "" else "", 
             pln_total,
-            detail['cash_usd'], 
-            detail['cash_eur'], 
-            detail['card'], 
+            round(detail['cash_usd'], 2) if detail['cash_usd'] else "", 
+            round(detail['cash_eur'], 2) if detail['cash_eur'] else "", 
+            round(detail['card'], 2) if detail['card'] else "", 
             detail['currency'],
             detail['comment']
         ]
