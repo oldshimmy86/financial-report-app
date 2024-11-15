@@ -67,12 +67,16 @@ def process_data(cashin_data, cashout_data):
             test_order = False
 
             # Определение типа платежа через атрибут PaymentType и test_order
-            payment_type = "unknown"
+            payment_type = None
             for attr in item.get("attributes", []):
                 if attr["name"] == "PaymentType":
-                    payment_type = payment_type_mapping.get(attr["value"]["name"], "unknown")
+                    payment_type = payment_type_mapping.get(attr["value"]["name"])
                 elif attr["name"] == "test_order":
                     test_order = attr.get("value", False)
+
+            # Пропускаем записи с неизвестным payment_type
+            if not payment_type or currency == "UNKNOWN":
+                continue
 
             # Коррекция для расхода
             if doc_type == "Расход":
