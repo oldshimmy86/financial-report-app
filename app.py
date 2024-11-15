@@ -1,3 +1,4 @@
+import streamlit as st
 def generate_excel():
     cash_in_orders = fetch_orders("cashin")
     cash_out_orders = fetch_orders("cashout")
