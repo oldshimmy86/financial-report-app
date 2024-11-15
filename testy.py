@@ -126,6 +126,8 @@ def generate_excel():
     details_sheet.append(["Дата", "Номер ордера", "Cash, PLN", "PLN total", "Cash, USD", "Cash, EUR", "Card", "Currency", "Comment"])
     
     details_sheet.column_dimensions['A'].width = 15
+    details_sheet.column_dimensions['B'].width = 15
+
     
     pln_total = 0
     
